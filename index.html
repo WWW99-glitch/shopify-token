@@ -39,7 +39,7 @@ input:focus { border-color: #96BF48; }
     <div class="field">
       <label>Client Secret</label>
       <input id="client-secret" type="password" placeholder="••••••••••" />
-      <div class="hint">Partners Dashboard → Claude → Paramètres → Secret (clique sur l'œil pour voir)</div>
+      <div class="hint">Partners Dashboard → Claude → Paramètres → Secret (clique sur l'œil)</div>
     </div>
     <button class="btn" onclick="startOAuth()">Connecter ma boutique →</button>
     <div class="error" id="error-msg"></div>
@@ -50,6 +50,7 @@ input:focus { border-color: #96BF48; }
       <h2>🎉 Ton token Shopify :</h2>
       <div class="token-value" id="token-value"></div>
       <button class="copy-btn" onclick="copyToken()">Copier le token</button>
+      <p style="margin-top:10px;font-size:12px;color:#6b7280;">Conserve ce token. Retourne sur Claude et colle-le !</p>
     </div>
     <div class="error" id="callback-error"></div>
   </div>
@@ -60,12 +61,17 @@ function startOAuth() {
   const store = document.getElementById("store").value.trim().replace(/^https?:\/\//, "").replace(/\/$/, "");
   const clientId = document.getElementById("client-id").value.trim();
   const secret = document.getElementById("client-secret").value.trim();
-  if (!store || !clientId || !secret) { const e = document.getElementById("error-msg"); e.style.display="block"; e.textContent="Remplis tous les champs."; return; }
+  if (!store || !clientId || !secret) {
+    const e = document.getElementById("error-msg");
+    e.style.display = "block";
+    e.textContent = "Remplis tous les champs.";
+    return;
+  }
   sessionStorage.setItem("shopify_store", store);
   sessionStorage.setItem("shopify_secret", secret);
   sessionStorage.setItem("shopify_client_id", clientId);
   const redirectUri = encodeURIComponent(window.location.href.split("?")[0]);
-  const scopes = "read_all_orders,write_orders,read_products,write_products,read_customers,write_customers,read_inventory,write_inventory,read_draft_orders,write_draft_orders,read_fulfillments,write_fulfillments,read_shipping,write_shipping,read_price_rules,write_price_rules,read_discounts,write_discounts,read_content,write_content,read_themes,write_themes,read_analytics,read_metafields,write_metafields,read_locations";
+  const scopes = "read_all_orders,write_orders,read_products,write_products,read_customers,write_customers,read_inventory,write_inventory,read_draft_orders,write_draft_orders,read_fulfillments,write_fulfillments,read_shipping,write_shipping,read_price_rules,write_price_rules,read_discounts,write_discounts,read_content,write_content,read_themes,write_themes,read_analytics,read_locations,read_reports,write_reports,read_gift_cards,write_gift_cards";
   const state = Math.random().toString(36).substring(2);
   sessionStorage.setItem("shopify_state", state);
   window.location.href = `https://${store}/admin/oauth/authorize?client_id=${clientId}&scope=${scopes}&redirect_uri=${redirectUri}&state=${state}`;
@@ -91,14 +97,20 @@ async function handleCallback() {
       document.getElementById("token-value").textContent = data.access_token;
       window.history.replaceState({}, "", window.location.pathname);
     } else {
-      const e = document.getElementById("callback-error"); e.style.display="block"; e.textContent = JSON.stringify(data);
+      const e = document.getElementById("callback-error");
+      e.style.display = "block";
+      e.textContent = JSON.stringify(data);
     }
   } catch(e) {
-    const el = document.getElementById("callback-error"); el.style.display="block"; el.textContent = e.message;
+    const el = document.getElementById("callback-error");
+    el.style.display = "block";
+    el.textContent = e.message;
   }
 }
 function copyToken() {
-  navigator.clipboard.writeText(document.getElementById("token-value").textContent).then(() => { document.querySelector(".copy-btn").textContent = "✓ Copié !"; });
+  navigator.clipboard.writeText(document.getElementById("token-value").textContent).then(() => {
+    document.querySelector(".copy-btn").textContent = "✓ Copié !";
+  });
 }
 if (window.location.search.includes("code=")) handleCallback();
 </script>
